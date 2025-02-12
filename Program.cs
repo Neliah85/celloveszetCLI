@@ -1,72 +1,65 @@
-﻿using celloveszetCLI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
-class Program
+public class Program
 {
-    static void Main(string[] args)
+    public static List<ShootingResult> ReadFile(string filename)
     {
-       
-        string filePath = "lovesek.csv";
+        var shooters = new List<ShootingResult>();
 
-        
-        List<TargetShooter> shooters = new List<TargetShooter>();
-
-      
-        using (StreamReader sr = new StreamReader(filePath))
+        using (var reader = new StreamReader(filename))
         {
-            while (!sr.EndOfStream)
+            string line;
+            while ((line = reader.ReadLine()) != null)
             {
-                var line = sr.ReadLine();  
-                var shooter = new TargetShooter(line); 
-                shooters.Add(shooter); 
+                var data = line.Split(';');
+                var shooter = new ShootingResult(data[0], data[1], data[2], data[3], data[4]);
+                shooters.Add(shooter);
             }
         }
+        return shooters;
+    }
+    public static void Main(string[] args)
+    {
+        var shooters = ReadFile("lovesek.csv");
+
+       
+        DisplayBestShooter(shooters);
 
         
+        DisplayWeakestShooter(shooters);
+
+        Console.WriteLine("\nJátékosok legnagyobb lövései:");
         foreach (var shooter in shooters)
         {
-            Console.WriteLine($"{shooter.Name}: {shooter.GetHighestScore()}");
+            Console.WriteLine($"{shooter.Name}: {shooter.GetMaxShot()}");
         }
     }
-
-    public static void FindBestShooter(List<Shooter> shooters)
+    public static void DisplayBestShooter(List<ShootingResult> shooters)
     {
-        Shooter bestShooter = null;
-        int bestScore = -1;
-
+        var bestShooter = shooters[0];
         foreach (var shooter in shooters)
         {
-            int highestShot = shooter.Shots.Max(); 
-            if (highestShot > bestScore)
+            if (shooter.GetMaxShot() > bestShooter.GetMaxShot())
             {
-                bestScore = highestShot;
                 bestShooter = shooter;
             }
         }
-
-        Console.WriteLine($"Legjobb lövő: {bestShooter.Name}");
-        Console.WriteLine($"Lövések: {string.Join(", ", bestShooter.Shots)}");
+        Console.WriteLine($"Legjobb lövő: {bestShooter.Name}, legnagyobb lövése: {bestShooter.GetMaxShot()}");
     }
 
-    public static void FindWeakestShooter(List<Shooter> shooters)
+    public static void DisplayWeakestShooter(List<ShootingResult> shooters)
     {
-        Shooter weakestShooter = null;
-        double lowestAvg = double.MaxValue;
-
+        var weakestShooter = shooters[0];
         foreach (var shooter in shooters)
         {
-            double avgScore = shooter.Shots.Average(); 
-            if (avgScore < lowestAvg)
+            if (shooter.GetAverage() < weakestShooter.GetAverage())
             {
-                lowestAvg = avgScore;
                 weakestShooter = shooter;
             }
         }
-
-        Console.WriteLine($"Leggyengébb átlagú lövő: {weakestShooter.Name}");
-        Console.WriteLine($"Átlag pontszám: {lowestAvg:F2}");
+        Console.WriteLine($"Leggyengébb átlagú lövő: {weakestShooter.Name}, átlag: {weakestShooter.GetAverage():0.00}");
     }
 
 }
